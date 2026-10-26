@@ -109,6 +109,15 @@ public class JWKSServer {
         return keyPairGenerator.generateKeyPair();
     }
 
+    private static RsaJsonWebKey buildJwk(int kid, PrivateKey privateKey) {
+        RsaJsonWebKey jwk = new RsaJsonWebKey();
+        jwk.setPrivateKey(privateKey);
+        jwk.setKeyId("key-" + kid);
+        jwk.setAlgorithm("RS256");
+        jwk.setUse("sig");
+        return jwk;
+    }
+
     private static RsaJsonWebKey loadSigningKey(boolean expired) throws Exception {
         long now = Instant.now().getEpochSecond();
         String sql = expired
@@ -128,14 +137,7 @@ public class JWKSServer {
 
                 KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                 PrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-
-                RsaJsonWebKey jwk = new RsaJsonWebKey();
-                jwk.setPrivateKey(privateKey);
-                jwk.setKeyId("key-" + kid);
-                jwk.setAlgorithm("RS256");
-                jwk.setUse("sig");
-
-                return jwk;
+                return buildJwk(kid, privateKey);
             }
         }
     }
@@ -156,14 +158,7 @@ public class JWKSServer {
 
                     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
                     PrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
-
-                    RsaJsonWebKey jwk = new RsaJsonWebKey();
-                    jwk.setPrivateKey(privateKey);
-                    jwk.setKeyId("key-" + kid);
-                    jwk.setAlgorithm("RS256");
-                    jwk.setUse("sig");
-
-                    keys.add(jwk);
+                    keys.add(buildJwk(kid, privateKey));
                 }
             }
         }
